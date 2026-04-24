@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "RunLocal - Find Runs Near You",
@@ -15,6 +16,7 @@ export default function RootLayout({
       <body className="antialiased bg-background text-foreground min-h-screen">
         <main className="max-w-md mx-auto min-h-screen border-x border-gray-100 dark:border-gray-800 shadow-sm relative">
           {children}
+          <Toaster position="top-center" richColors />
         </main>
       </body>
     </html>

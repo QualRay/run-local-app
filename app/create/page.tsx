@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2, Route, Clock, MapPin, Gauge, Type, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CreateRunPage() {
   const router = useRouter();
@@ -141,7 +142,7 @@ export default function CreateRunPage() {
       router.refresh();
 
     } catch (err: any) {
-      setError(err.message || "Failed to create run.");
+      toast.error(err.message || "Failed to create run.");
       setLoading(false);
     }
   };
@@ -308,13 +309,7 @@ export default function CreateRunPage() {
             )}
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-start gap-2 text-red-600 bg-red-50 p-3 rounded-xl text-sm font-medium">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <p>{error}</p>
-            </div>
-          )}
+
 
           {/* Submit */}
           <button

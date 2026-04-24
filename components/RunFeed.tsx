@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { MapPin, Users, Calendar, ArrowRight, Loader2, Plus, Map } from "lucide-react";
 import Link from "next/link";
+import RunFeedSkeleton from "./RunFeedSkeleton";
 
 export type Run = {
   id: string;
@@ -130,7 +131,7 @@ export default function RunFeed() {
           .map((run: any) => {
             const loc = parseLocation(run.location);
             let dist = 9999;
-            if (loc) {
+            if (loc && coords) {
               dist = haversineDistance(coords.lat, coords.lon, loc.lat, loc.lon);
             }
             return {
@@ -245,9 +246,7 @@ export default function RunFeed() {
 
       {loading && coords ? (
         // Secondary skeleton loader while fetching first batch of runs
-        <div className="flex justify-center py-10">
-           <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
-        </div>
+        <RunFeedSkeleton />
       ) : runs.length === 0 ? (
         // Empty State
         <div className="flex flex-col items-center justify-center py-16 px-6 bg-white rounded-3xl border border-dashed border-slate-200 text-center transition-all">

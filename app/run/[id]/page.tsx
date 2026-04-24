@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { MapPin, Users, Calendar, Clock, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 type RunData = {
   id: string;
@@ -13,6 +16,10 @@ type RunData = {
   pace_min_mile: string;
   location: string;
   host_id: string;
+};
+
+const haptic = (pattern: number | number[]) => { 
+  if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(pattern); 
 };
 
 export default function RunDetailPage({ params }: { params: { id: string } }) {
@@ -87,26 +94,109 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
     }
 
     loadRunDetails();
+
+    // REALTIME SUBSCRIPTION
+    const channel = supabase.channel(`run_participants_${params.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'run_participants', filter: `run_id=eq.${params.id}` },
+        async (payload) => {
+          const newUserId = payload.new.user_id;
+
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, full_name, profile_image_url, tier')
+            .eq('id', newUserId)
+            .single();
+
+          if (userData) {
+             const newParticipant = {
+                ...payload.new,
+                users: userData
+             };
+             
+             let wasAdded = false;
+             setParticipantList(prev => {
+                if (prev.some(p => p.user_id === newUserId)) return prev;
+                wasAdded = true;
+                return [...prev, newParticipant];
+             });
+             
+             if (wasAdded) {
+                setParticipantCount(c => c + 1);
+             }
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'run_participants', filter: `run_id=eq.${params.id}` },
+        (payload) => {
+           const removedUserId = payload.old.user_id;
+           let wasRemoved = false;
+           
+           setParticipantList(prev => {
+              if (!prev.some(p => p.user_id === removedUserId)) return prev;
+              wasRemoved = true;
+              return prev.filter(p => p.user_id !== removedUserId);
+           });
+           
+           if (wasRemoved) {
+              setParticipantCount(c => c - 1);
+           }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [params.id, supabase]);
 
   const handleJoinRun = async () => {
     setError(null);
-    setJoinLoading(true);
-    
     if (!currentUserId) return router.push("/login");
+
+    // 1 & 2. Optimistic Updates BEFORE the async call
+    setHasJoined(true);
+    setParticipantCount((prev) => prev + 1);
+    
+    const optimisticParticipant = {
+      user_id: currentUserId,
+      checked_in: false,
+      users: {
+        id: currentUserId,
+        full_name: "", // Will render as "Runner (You)" 
+        profile_image_url: null,
+        tier: "Getting Started"
+      }
+    };
+    
+    setParticipantList((prev) => [...prev, optimisticParticipant]);
+    setJoinLoading(true);
 
     const { error: joinError } = await supabase.from("run_participants").insert([{ run_id: params.id, user_id: currentUserId }]);
 
+    // 3. Rollback on Error
     if (joinError) {
       if (joinError.code === '23505') {
-        // Postgres Unique Violation: User already joined this run (e.g. from rapid double-clicks or triggers)
-        window.location.reload();
+        // 5. Silent success for duplicate constraint - keep optimistic state
+        setJoinLoading(false);
+        haptic([10, 50, 10]);
+        toast.success("You're in! See you at the run");
         return;
       }
+      
+      // Rollback on actual failure
+      setHasJoined(false);
+      setParticipantCount((prev) => prev - 1);
+      setParticipantList((prev) => prev.filter(p => p.user_id !== currentUserId));
+      setJoinLoading(false);
+      toast.error(`Failed to join run. ${joinError.message}`);
       return setError(`Failed to join run. ${joinError.message}`);
     }
 
-    // NOTIFICATION TRIGGER: Notify Host that someone joined
+    // 6. Keep Notification Trigger
     if (run?.host_id && run.host_id !== currentUserId) {
         const { createNotification } = await import('@/utils/notifications');
         await createNotification(
@@ -116,31 +206,49 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
         );
     }
 
-    window.location.reload();
+    // 4. Removed window.location.reload()
+    setJoinLoading(false);
+    haptic([10, 50, 10]);
+    confetti({ particleCount: 80, spread: 70, origin: { y: 0.7 }, colors: ['#4F46E5', '#10B981', '#F59E0B'] });
+    toast.success("You're in! See you at the run");
   };
 
   const handleCheckIn = async () => {
     if (!currentUserId) return;
     setJoinLoading(true);
     
+    const checkInTime = new Date().toISOString();
     const { error } = await supabase
       .from("run_participants")
-      .update({ checked_in: true, checked_in_at: new Date().toISOString() })
+      .update({ checked_in: true, checked_in_at: checkInTime })
       .eq("run_id", params.id)
       .eq("user_id", currentUserId);
 
     if (error) {
-      alert("Failed to check in.");
+      toast.error("Failed to check in");
       setJoinLoading(false);
       return;
     }
-    window.location.reload();
+    
+    setParticipantList((prev) => 
+      prev.map((p) => 
+        p.user_id === currentUserId 
+          ? { ...p, checked_in: true, checked_in_at: checkInTime }
+          : p
+      )
+    );
+    
+    setJoinLoading(false);
+    haptic([20, 30, 20, 30, 40]);
+    confetti({ particleCount: 60, spread: 55, origin: { y: 0.6 }, colors: ['#10B981', '#34D399'] });
+    toast.success("Checked in! You're at the starting line");
   };
 
   const handleFistBump = async (toUserId: string) => {
       if (!currentUserId) return;
       if (fistBumpsGiven.length >= 3) {
-          alert("You maxed out your 3 fist bumps for this run! Use them wisely.");
+          haptic([5, 10, 5]);
+          toast.warning("You've used all 3 fist bumps for this run");
           return;
       }
       
@@ -173,8 +281,10 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
             .update({ fist_bump_count: newBumpCount, tier: newTier })
             .eq("id", toUserId);
             
+          haptic(15);
+          toast.success("Fist bump sent!");
       } else {
-          alert("Could not send fist bump! " + error.message);
+          toast.error("Could not send fist bump");
       }
   };
 
@@ -205,14 +315,12 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
   const currentUserParticipant = participantList.find(p => p.user_id === currentUserId);
   const isCheckedIn = currentUserParticipant?.checked_in || false;
 
-  const getTierColor = (tier: string) => {
-      switch(tier) {
-          case 'Regular Runner': return 'bg-purple-100 text-purple-700';
-          case 'Finding My Pace': return 'bg-orange-100 text-orange-700';
-          case 'Building Consistency': return 'bg-blue-100 text-blue-700';
-          default: return 'bg-slate-100 text-slate-600';
-      }
-  };
+  const getTierVariant = (tier: string): "default"|"secondary"|"outline"|"destructive" => {
+    if (tier === 'Regular Runner') return 'default'
+    if (tier === 'Building Consistency') return 'secondary'
+    if (tier === 'Finding My Pace') return 'outline'
+    return 'outline'
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 pb-24">
@@ -265,7 +373,7 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-indigo-50 p-5 rounded-3xl border border-indigo-100">
             <p className="text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">Distance</p>
-            <p className="text-2xl font-black text-indigo-900">{run.distance_miles} <span className="text-base font-semibold text-indigo-700">mi</span></p>
+            <p className="text-2xl font-black text-indigo-900">{parseFloat(Number(run.distance_miles).toFixed(2))} <span className="text-base font-semibold text-indigo-700">mi</span></p>
           </div>
           <div className="bg-emerald-50 p-5 rounded-3xl border border-emerald-100">
             <p className="text-emerald-600 text-xs font-bold uppercase tracking-wider mb-1">Target Pace</p>
@@ -303,12 +411,12 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
                     <div className="flex flex-col">
                        <span className="font-bold text-slate-900 flex items-center gap-2">
                          {u.full_name || "Runner"} {isMe && <span className="text-slate-400 font-medium text-xs">(You)</span>}
-                         {p.checked_in && <CheckCircle2 className="w-4 h-4 text-emerald-500" title="Checked In" />}
+                         {p.checked_in && <span title="Checked In"><CheckCircle2 className="w-4 h-4 text-emerald-500" /></span>}
                        </span>
                        {!isRunStarted && (
-                          <span className={`text-[10px] w-fit font-bold mt-1 px-2 py-0.5 rounded-full ${getTierColor(u.tier)}`}>
+                          <Badge variant={getTierVariant(u.tier)} className="text-[10px] mt-1">
                             {u.tier || "Getting Started"}
-                          </span>
+                          </Badge>
                        )}
                     </div>
                   </div>
@@ -329,7 +437,7 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
                        {isBumped ? "Bumped!" : "👊 Bump"}
                      </button>
                   ) : (
-                    isRunStarted && <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getTierColor(u.tier)}`}>{u.tier || "Getting Started"}</span>
+                    isRunStarted && <Badge variant={getTierVariant(u.tier)} className="text-[10px] mt-1">{u.tier || "Getting Started"}</Badge>
                   )}
                 </div>
               );
