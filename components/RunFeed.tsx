@@ -5,6 +5,10 @@ import { createClient } from "@/utils/supabase/client";
 import { MapPin, Users, Calendar, ArrowRight, Loader2, Plus, Map } from "lucide-react";
 import Link from "next/link";
 import RunFeedSkeleton from "./RunFeedSkeleton";
+import { motion } from "framer-motion";
+
+const listVariants = { visible: { transition: { staggerChildren: 0.06 } } };
+const cardVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4,0,0.2,1] } } };
 
 export type Run = {
   id: string;
@@ -264,15 +268,21 @@ export default function RunFeed() {
         </div>
       ) : (
         // Runs Wrapper (with subtle opacity drop when refetching slider checks)
-        <div className={`space-y-4 transition-opacity duration-300 ${refetching ? 'opacity-50 blur-[1px]' : 'opacity-100'}`}>
+        <motion.div 
+          className={`space-y-4 transition-opacity duration-300 ${refetching ? 'opacity-50 blur-[1px]' : 'opacity-100'}`}
+          variants={listVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {runs.map((run) => {
             const runDate = new Date(run.start_time);
             const timeFormatted = runDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const dateFormatted = runDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 
             return (
-              <div 
+              <motion.div 
                 key={run.id}
+                variants={cardVariants}
                 className="bg-white rounded-[2rem] p-5 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.05)] border border-slate-100 transition-transform active:scale-[0.99]"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -301,10 +311,10 @@ export default function RunFeed() {
                   Join & Details
                   <ArrowRight className="w-4 h-4 text-slate-400" />
                 </Link>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
     </div>
   );

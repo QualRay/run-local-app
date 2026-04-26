@@ -7,6 +7,7 @@ import { MapPin, Users, Calendar, Clock, ArrowLeft, Loader2, CheckCircle2 } from
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import PageTransition from "@/components/PageTransition";
 
 type RunData = {
   id: string;
@@ -290,17 +291,21 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-      </div>
+      <PageTransition>
+        <div className="flex h-screen items-center justify-center bg-slate-50">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        </div>
+      </PageTransition>
     );
   }
 
   if (!run || error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 px-6">
-        <p className="text-slate-500">{error || "Could not load run."}</p>
-      </div>
+      <PageTransition>
+        <div className="flex h-screen items-center justify-center bg-slate-50 px-6">
+          <p className="text-slate-500">{error || "Could not load run."}</p>
+        </div>
+      </PageTransition>
     );
   }
 
@@ -323,8 +328,9 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 pb-24">
-      {/* Dynamic Header */}
+    <PageTransition>
+      <div className="flex flex-col min-h-screen bg-slate-50 pb-24">
+        {/* Dynamic Header */}
       <header className="px-6 py-5 bg-transparent sticky top-0 z-10 flex justify-between items-center backdrop-blur-md">
         <button
           onClick={() => router.back()}
@@ -485,5 +491,6 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2, Route, Clock, MapPin, Gauge, Type, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import PageTransition from "@/components/PageTransition";
 
 export default function CreateRunPage() {
   const router = useRouter();
@@ -168,7 +169,8 @@ export default function CreateRunPage() {
   const todayString = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <PageTransition>
+      <div className="flex flex-col min-h-screen bg-slate-50">
       <header className="px-6 py-5 bg-white border-b border-slate-200">
         <button
           onClick={() => router.back()}
@@ -322,5 +324,6 @@ export default function CreateRunPage() {
         </form>
       </main>
     </div>
+    </PageTransition>
   );
 }
