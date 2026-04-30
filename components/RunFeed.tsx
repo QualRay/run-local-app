@@ -185,7 +185,7 @@ export default function RunFeed() {
   // Loading Initial State
   if (loading && !coords && !locationError) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-4">
+      <div className="flex flex-col items-center justify-center py-20 text-[#71717a] space-y-4">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
         <p className="text-sm font-medium">Finding your coordinates...</p>
       </div>
@@ -209,14 +209,14 @@ export default function RunFeed() {
     <div className="space-y-6">
       
       {/* Search Radius Controller */}
-      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+      <div className="bg-[var(--surface-card)] rounded-[2rem] p-6 shadow-sm border border-[var(--border-card)] relative overflow-hidden">
         <div className="absolute top-0 right-0 p-6 opacity-5">
            <Map className="w-32 h-32 -mt-10 -mr-10 text-indigo-900" />
         </div>
         <div className="relative z-10">
           <div className="flex justify-between items-center mb-5">
-            <label className="text-sm font-bold text-slate-900 uppercase tracking-widest">Search Radius</label>
-            <span className="bg-indigo-50 text-indigo-700 font-bold px-3 py-1.5 rounded-xl text-sm transition-all shadow-inner">
+            <label className="text-sm font-bold text-[var(--foreground)] uppercase tracking-widest">Search Radius</label>
+            <span className="font-bold px-3 py-1.5 rounded-xl text-sm transition-all shadow-inner" style={{ background: 'var(--aurora-subtle)', color: '#8b5cf6' }}>
               {radiusMiles} miles
             </span>
           </div>
@@ -231,9 +231,9 @@ export default function RunFeed() {
               setRadiusMiles(parseInt(e.target.value));
               setAutoExpandedTo(null); // Clear message if user manually changes slider
             }}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full h-2 bg-[var(--surface-subtle)] rounded-lg appearance-none cursor-pointer accent-[#8b5cf6] transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           />
-          <div className="flex justify-between text-xs text-slate-400 mt-3 font-semibold px-0.5">
+          <div className="flex justify-between text-xs text-[#71717a] mt-3 font-semibold px-0.5">
             <span>1 mi</span>
             <span>20 mi</span>
           </div>
@@ -253,15 +253,15 @@ export default function RunFeed() {
         <RunFeedSkeleton />
       ) : runs.length === 0 ? (
         // Empty State
-        <div className="flex flex-col items-center justify-center py-16 px-6 bg-white rounded-3xl border border-dashed border-slate-200 text-center transition-all">
-          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-            <MapPin className="w-8 h-8 text-slate-300" />
+        <div className="flex flex-col items-center justify-center py-16 px-6 bg-[var(--surface-card)] rounded-3xl border border-dashed border-[var(--border-card)] text-center transition-all">
+          <div className="w-16 h-16 bg-[var(--surface-subtle)] rounded-full flex items-center justify-center mb-4">
+            <MapPin className="w-8 h-8 text-[#71717a]" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900 mb-2">No runs near you</h3>
-          <p className="text-sm text-slate-500 mb-6 max-w-[200px] leading-relaxed">
+          <h3 className="text-lg font-bold text-[var(--foreground)] mb-2">No runs near you</h3>
+          <p className="text-sm text-[#71717a] mb-6 max-w-[200px] leading-relaxed">
             Expand your radius or step up to be the first host.
           </p>
-          <Link href="/create" className="bg-indigo-600 text-white font-semibold flex items-center gap-2 px-6 py-3.5 rounded-2xl hover:bg-indigo-500 transition-all active:scale-[0.98] shadow-[0_8px_30px_rgb(79,70,229,0.2)]">
+          <Link href="/create" className="text-white font-semibold flex items-center gap-2 px-6 py-3.5 rounded-2xl transition-all active:scale-[0.98]" style={{ background: 'var(--aurora-primary)' }}>
             <Plus className="w-5 h-5" />
             Create First Run
           </Link>
@@ -283,33 +283,38 @@ export default function RunFeed() {
               <motion.div 
                 key={run.id}
                 variants={cardVariants}
-                className="bg-white rounded-[2rem] p-5 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.05)] border border-slate-100 transition-transform active:scale-[0.99]"
+                className="bg-[var(--surface-card)] border border-[var(--border-card)] p-5 transition-transform active:scale-[0.99]"
+                style={{ borderRadius: 'var(--radius-lg)' }}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-bold text-slate-900 text-lg leading-tight mb-1">{run.title}</h3>
-                    <div className="flex items-center text-slate-500 mb-1 text-sm font-medium">
+                    <h3 className="font-bold text-[var(--foreground)] text-lg leading-tight mb-1">{run.title}</h3>
+                    <div className="flex items-center text-[#71717a] mb-1 text-sm font-medium">
                       <MapPin className="w-4 h-4 mr-1.5 shrink-0" />
                       <span className="truncate">{run.location_label || "Starting Point"}</span>
                     </div>
-                    <p className="text-sm font-semibold text-indigo-600">{run.distance_away_miles.toFixed(1)} miles away</p>
+                    <p className="font-semibold mt-1">
+                      <span style={{ background: 'var(--aurora-subtle)', borderRadius: 'var(--radius-sm)', padding: '2px 8px', fontSize: 12 }}>
+                        {run.distance_away_miles.toFixed(1)} miles away
+                      </span>
+                    </p>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm text-slate-600 mb-5">
+                <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm text-[#71717a] mb-5">
                   <div className="flex items-center gap-2 font-medium">
-                    <Calendar className="w-4 h-4 text-slate-400" />
-                    <span>{dateFormatted}, {timeFormatted}</span>
+                    <Calendar className="w-4 h-4 text-[#a1a1aa]" />
+                    <span className="text-[var(--foreground)]">{dateFormatted}, {timeFormatted}</span>
                   </div>
                   <div className="flex items-center gap-2 font-medium">
-                    <Users className="w-4 h-4 text-slate-400" />
-                    <span>{run.participants_count} joined</span>
+                    <Users className="w-4 h-4 text-[#a1a1aa]" />
+                    <span className="text-[var(--foreground)]">{run.participants_count} joined</span>
                   </div>
                 </div>
 
-                <Link href={`/run/${run.id}`} className="w-full bg-slate-50 text-slate-800 focus:ring-none rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 hover:bg-slate-100 transition-all active:bg-slate-200">
+                <Link href={`/run/${run.id}`} className="w-full bg-[var(--surface-subtle)] text-[var(--foreground)] focus:ring-none rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 hover:opacity-80 active:scale-[0.98]" style={{ transition: 'all .15s' }}>
                   Join & Details
-                  <ArrowRight className="w-4 h-4 text-slate-400" />
+                  <ArrowRight className="w-4 h-4 text-[#71717a]" />
                 </Link>
               </motion.div>
             );

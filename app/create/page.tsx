@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2, Route, Clock, MapPin, Gauge, Type, AlertCircle } from "lucide-react";
@@ -36,6 +36,18 @@ export default function CreateRunPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lon: number, display_name: string} | null>(null);
+  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
+  const placeInputRef = useRef<HTMLInputElement>(null);
+
+  // Ask for browser location to bias search results nearby
+  useEffect(() => {
+    if (typeof window !== 'undefined' && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        (err) => console.log("Geolocation bias skipped:", err)
+      );
+    }
+  }, []);
 
   // Live Location Autocomplete
   useEffect(() => {
@@ -53,9 +65,14 @@ export default function CreateRunPage() {
            const { data: profile } = await supabase.from('users').select('zip_code').eq('id', user.id).single();
            if (profile?.zip_code) zipBias = ` ${profile.zip_code}`;
         }
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place + zipBias)}&countrycodes=us&limit=5`);
+        // Using Photon by Komoot (Free, No API Key, supports parks/POIs well)
+        let url = `https://photon.komoot.io/api/?q=${encodeURIComponent(place + zipBias)}&limit=5`;
+        if (userLocation) {
+          url += `&lat=${userLocation.lat}&lon=${userLocation.lon}`;
+        }
+        const res = await fetch(url);
         const data = await res.json();
-        setSuggestions(data || []);
+        setSuggestions(data.features || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -63,7 +80,7 @@ export default function CreateRunPage() {
       }
     }, 400); // 400ms debounce
     return () => clearTimeout(timer);
-  }, [place, selectedLocation, supabase]);
+  }, [place, selectedLocation, supabase, userLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,162 +165,179 @@ export default function CreateRunPage() {
     }
   };
 
-  // Build strict 30-min interval dropdown options
-  const generateTimeOptions = () => {
-    const times = [];
-    for (let i = 0; i < 24; i++) {
-      for (const mins of ["00", "30"]) {
-        const hour24 = i < 10 ? `0${i}` : `${i}`;
-        const hour12 = i === 0 ? 12 : i > 12 ? i - 12 : i;
-        const ampm = i < 12 ? "AM" : "PM";
-        times.push(
-          <option key={`${hour24}:${mins}`} value={`${hour24}:${mins}`}>
-            {hour12}:{mins} {ampm}
-          </option>
-        );
-      }
-    }
-    return times;
-  };
+
 
   const todayString = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0];
 
   return (
     <PageTransition>
-      <div className="flex flex-col min-h-screen bg-slate-50">
-      <header className="px-6 py-5 bg-white border-b border-slate-200">
+      <div className="flex flex-col min-h-screen bg-[var(--surface-page)]">
+      <header className="px-6 py-5 bg-[var(--surface-page)]/80 backdrop-blur-md z-10 sticky top-0">
         <button
           onClick={() => router.back()}
-          className="text-slate-500 font-semibold text-sm hover:text-slate-800 transition"
+          className="text-[#71717a] font-semibold text-sm hover:opacity-80 transition"
         >
           Cancel
         </button>
       </header>
 
       <main className="flex-1 p-6 pb-24">
-        <div className="mb-6">
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2">Create Run</h1>
-          <p className="text-slate-500 text-sm">Takes less than 30 seconds.</p>
+        <div className="mb-8">
+          <h1 className="text-[32px] font-extrabold tracking-[-0.03em] text-[var(--foreground)] mb-1">Create Run</h1>
+          <p className="text-[#71717a] text-sm">Takes less than 30 seconds.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* 1. Title */}
           <div className="relative">
-            <Type className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Type className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-[#71717a]" />
             <input
               type="text"
               placeholder="Morning 5K Loop"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-transparent border-0 border-b-[1.5px] border-[var(--border-card)] rounded-none pt-[12px] pb-[8px] pl-[40px] pr-4 text-[var(--foreground)] focus:outline-none focus:ring-0 focus:border-b-[#8b5cf6] transition-colors duration-200 appearance-none"
               maxLength={40}
               required
             />
           </div>
 
-          {/* 2. Structured Date & Time Dropdowns */}
+          {/* 2. Structured Date & Time Inputs (Side-by-side) */}
           <div className="flex gap-4">
-            <div className="relative flex-[3]">
-              <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <div className="relative flex-1">
+              <Clock className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-[#71717a]" />
               <input
                 type="date"
                 min={todayString}
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-transparent border-0 border-b-[1.5px] border-[var(--border-card)] rounded-none pt-[12px] pb-[8px] pl-[40px] pr-0 text-[var(--foreground)] focus:outline-none focus:ring-0 focus:border-b-[#8b5cf6] transition-colors duration-200 appearance-none cursor-pointer"
                 required
               />
             </div>
-            <div className="relative flex-[2]">
-              <select
+            <div className="relative flex-1">
+              <input
+                type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 text-slate-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className="w-full bg-transparent border-0 border-b-[1.5px] border-[var(--border-card)] rounded-none pt-[12px] pb-[8px] px-2 text-[var(--foreground)] focus:outline-none focus:ring-0 focus:border-b-[#8b5cf6] transition-colors duration-200 appearance-none cursor-pointer text-center"
                 required
-              >
-                {generateTimeOptions()}
-              </select>
+              />
             </div>
           </div>
 
-          <div className="flex gap-4">
-            {/* 3. Distance */}
-            <div className="relative flex-1">
-              <Route className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="e.g. 5, 10, 13.1"
-                value={distance}
-                onChange={(e) => setDistance(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-16 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-              <select
-                value={unit}
-                onChange={(e) => setUnit(e.target.value as "mi" | "km")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 px-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer transition"
-              >
-                <option value="mi">MI</option>
-                <option value="km">KM</option>
-              </select>
+          {/* 3. Distance */}
+          <div className="relative">
+            <Route className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-[#71717a]" />
+            <input
+              type="text"
+              placeholder="e.g. 5, 10, 13.1"
+              value={distance}
+              onChange={(e) => setDistance(e.target.value)}
+              className="w-full bg-transparent border-0 border-b-[1.5px] border-[var(--border-card)] rounded-none pt-[12px] pb-[8px] pl-[40px] pr-24 text-[var(--foreground)] focus:outline-none focus:ring-0 focus:border-b-[#8b5cf6] transition-colors duration-200 appearance-none"
+              required
+            />
+            <div style={{ display:'flex', gap:2, position:'absolute', right:0, top:'50%', transform:'translateY(-50%)' }}>
+              {['mi','km'].map(u => (
+                <button 
+                  key={u} 
+                  type="button"
+                  onClick={() => setUnit(u as 'mi'|'km')} 
+                  style={{ padding:'4px 10px', borderRadius:'var(--radius-sm)', background: unit===u ? 'var(--aurora-subtle)' : 'transparent', border: unit===u ? '1px solid rgba(99,102,241,.3)' : '1px solid transparent', color: unit===u ? '#8b5cf6' : '#71717a', fontSize:12, fontWeight:500, cursor:'pointer' }}
+                >
+                  {u.toUpperCase()}
+                </button>
+              ))}
             </div>
+          </div>
 
-            {/* 4. Pace Dropdown */}
-            <div className="relative flex-1">
-              <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <select
-                value={pace}
-                onChange={(e) => setPace(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-slate-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                <option value="Easy">Easy</option>
-                <option value="Tempo">Tempo</option>
-                <option value="Fartlek">Fartlek</option>
-                <option value="Long Run">Long Run</option>
-              </select>
-            </div>
+          {/* 4. Pace Dropdown */}
+          <div className="relative">
+            <Gauge className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-[#71717a]" />
+            <select
+              value={pace}
+              onChange={(e) => setPace(e.target.value)}
+              className="w-full bg-transparent border-0 border-b-[1.5px] border-[var(--border-card)] rounded-none pt-[12px] pb-[8px] pl-[40px] pr-4 text-[var(--foreground)] focus:outline-none focus:ring-0 focus:border-b-[#8b5cf6] transition-colors duration-200 appearance-none cursor-pointer"
+            >
+              <option value="Easy">Easy</option>
+              <option value="Tempo">Tempo</option>
+              <option value="Fartlek">Fartlek</option>
+              <option value="Long Run">Long Run</option>
+            </select>
           </div>
 
           {/* 5. Natural Text Location Place Input with Autocomplete */}
           <div className="relative">
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <MapPin className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-[#71717a]" />
             <input
+              ref={placeInputRef}
               type="text"
-              placeholder="Search meeting spot (e.g. Central Park)"
+              placeholder="Search meeting spot"
               value={place}
               onChange={(e) => {
                 setPlace(e.target.value);
                 setSelectedLocation(null); // invalidate selection if they type
               }}
-              className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-12 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown' && suggestions.length > 0) {
+                  e.preventDefault();
+                  (document.querySelector('[role="option"]') as HTMLElement)?.focus();
+                }
+              }}
+              className="w-full bg-transparent border-0 border-b-[1.5px] border-[var(--border-card)] rounded-none pt-[12px] pb-[8px] pl-[40px] pr-12 text-[var(--foreground)] focus:outline-none focus:ring-0 focus:border-b-[#8b5cf6] transition-colors duration-200 appearance-none"
               required
             />
             {isSearching && (
-              <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-500 animate-spin" />
+              <Loader2 className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b5cf6] animate-spin" />
             )}
 
             {/* Suggestions Dropdown */}
             {suggestions.length > 0 && (
-              <div className="absolute z-20 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] overflow-hidden max-h-60 overflow-y-auto">
-                {suggestions.map((s, i) => {
-                  const title = s.name || s.display_name.split(',')[0];
+              <div 
+                className="absolute z-20 w-full mt-2 overflow-hidden max-h-60 overflow-y-auto"
+                style={{ background: 'var(--surface-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)', boxShadow: '0 8px 32px rgba(0,0,0,.12)' }}
+              >
+                {suggestions.map((feature, i) => {
+                  const props = feature.properties;
+                  const title = props.name || props.street || props.city || "Unknown Location";
+                  const display_name = [props.name, props.street, props.city, props.state].filter(Boolean).join(', ');
                   return (
                     <button
                       key={i}
                       type="button"
+                      role="option"
                       onClick={() => {
                         setPlace(title);
                         setSelectedLocation({ 
-                          lat: parseFloat(s.lat), 
-                          lon: parseFloat(s.lon), 
+                          lat: feature.geometry.coordinates[1], 
+                          lon: feature.geometry.coordinates[0], 
                           display_name: title 
                         });
                         setSuggestions([]);
                       }}
-                      className="w-full text-left px-5 py-3 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors"
+                      onKeyDown={(e) => {
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          (e.currentTarget.nextElementSibling as HTMLElement)?.focus();
+                        } else if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          const prev = e.currentTarget.previousElementSibling as HTMLElement;
+                          if (prev) {
+                            prev.focus();
+                          } else {
+                            placeInputRef.current?.focus();
+                          }
+                        } else if (e.key === 'Escape') {
+                          e.preventDefault();
+                          setSuggestions([]);
+                          placeInputRef.current?.focus();
+                        }
+                      }}
+                      className="w-full text-left focus:outline-none hover:bg-[var(--surface-subtle)] transition-colors"
+                      style={{ padding: '10px 16px', borderBottom: '0.5px solid var(--border-card)' }}
                     >
-                      <p className="font-bold text-slate-900 text-sm mb-0.5">{title}</p>
-                      <p className="text-xs text-slate-500 truncate leading-tight">{s.display_name}</p>
+                      <p className="font-bold text-[var(--foreground)] text-sm mb-0.5 pointer-events-none">{title}</p>
+                      <p className="text-xs text-[#71717a] truncate leading-tight pointer-events-none">{display_name}</p>
                     </button>
                   );
                 })}
@@ -311,15 +345,16 @@ export default function CreateRunPage() {
             )}
           </div>
 
-
+          {error && <p style={{ color: '#f87171', fontSize: 13, marginTop: 8 }}>{error}</p>}
 
           {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black disabled:bg-slate-800 text-white font-semibold py-4 rounded-2xl shadow-lg hover:bg-slate-800 flex items-center justify-center gap-2 transition active:scale-[0.98]"
+            className="w-full text-white flex items-center justify-center gap-2 transition active:scale-[0.98] disabled:opacity-50 mt-8"
+            style={{ background: 'var(--aurora-primary)', fontSize: 15, fontWeight: 600, borderRadius: 'var(--radius-md)', padding: '16px 24px' }}
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Post Run to Explore Page"}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Post run"}
           </button>
         </form>
       </main>

@@ -6,6 +6,18 @@
   --background: #ffffff;
   --foreground: #171717;
   --primary: #2563eb; /* Blue-600 */
+  --aurora-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #ec4899 100%);
+  --aurora-subtle: linear-gradient(135deg, rgba(99,102,241,.10) 0%, rgba(236,72,153,.07) 100%);
+  --aurora-mesh: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(236,72,153,.15) 0%, transparent 60%);
+  --aurora-text: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+  --surface-page: #fafafa;
+  --surface-card: #ffffff;
+  --surface-subtle: #f4f4f5;
+  --border-card: rgba(0,0,0,.08);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,11 +25,53 @@
     --background: #0a0a0a;
     --foreground: #ededed;
     --primary: #3b82f6; /* Blue-500 */
+    --surface-page: #0a0a0a;
+    --surface-card: #111111;
+    --surface-subtle: #18181b;
+    --border-card: rgba(255,255,255,.08);
+    --aurora-mesh: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,.20) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(236,72,153,.20) 0%, transparent 60%);
   }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, sans-serif;
+}
+
+.aurora-text {
+  background: var(--aurora-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.aurora-border {
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  background-image: var(--aurora-primary);
+}
+
+@keyframes aurora-drift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.aurora-bg-drift {
+  background: var(--aurora-mesh), var(--surface-page);
+  background-size: 200% 200%;
+  animation: aurora-drift 12s infinite alternate ease-in-out;
+}
+
+.map-dot-fill {
+  fill: rgba(99,102,241,.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  .map-dot-fill {
+    fill: rgba(139,92,246,.28);
+  }
+  .frosted-glass {
+    background: rgba(17,17,17,.85) !important;
+  }
 }

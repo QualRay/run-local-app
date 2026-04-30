@@ -292,7 +292,7 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
   if (loading) {
     return (
       <PageTransition>
-        <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="flex h-screen items-center justify-center bg-[var(--surface-page)]">
           <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
         </div>
       </PageTransition>
@@ -302,8 +302,8 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
   if (!run || error) {
     return (
       <PageTransition>
-        <div className="flex h-screen items-center justify-center bg-slate-50 px-6">
-          <p className="text-slate-500">{error || "Could not load run."}</p>
+        <div className="flex h-screen items-center justify-center bg-[var(--surface-page)] px-6">
+          <p className="text-[#71717a]">{error || "Could not load run."}</p>
         </div>
       </PageTransition>
     );
@@ -329,40 +329,54 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
 
   return (
     <PageTransition>
-      <div className="flex flex-col min-h-screen bg-slate-50 pb-24">
+      <div className="flex flex-col min-h-screen bg-[var(--surface-page)] pb-24">
         {/* Dynamic Header */}
       <header className="px-6 py-5 bg-transparent sticky top-0 z-10 flex justify-between items-center backdrop-blur-md">
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 bg-white shadow-sm border border-slate-100 rounded-full flex items-center justify-center text-slate-800 hover:scale-105 transition"
+          className="w-10 h-10 bg-[var(--surface-card)] shadow-sm border border-[var(--border-card)] rounded-full flex items-center justify-center text-[var(--foreground)] hover:scale-105 transition"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
       </header>
 
       {/* Map Preview Area (MVP Mock) */}
-      <div className="w-full h-64 bg-slate-200 relative -mt-20 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#CBD5E1_2px,transparent_2px)] [background-size:16px_16px]"></div>
-        <div className="bg-indigo-600 w-12 h-12 rounded-full flex items-center justify-center shadow-xl shadow-indigo-600/30 animate-pulse relative z-10 border-4 border-white">
-          <MapPin className="text-white w-5 h-5" />
+      <div style={{ width:'100%', height:256, position:'relative', overflow:'hidden', background:'var(--surface-subtle)', marginTop:-80 }}>
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style={{ position:'absolute', inset:0 }}>
+          <defs>
+            <pattern id="dotgrid" width="24" height="24" patternUnits="userSpaceOnUse">
+              <circle cx="12" cy="12" r="1.2" className="map-dot-fill" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dotgrid)" />
+          <radialGradient id="glow" cx="50%" cy="50%" r="30%">
+            <stop offset="0%" stopColor="rgba(139,92,246,.25)" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+          <ellipse cx="50%" cy="50%" rx="120" ry="80" fill="url(#glow)" />
+        </svg>
+        <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', zIndex:10 }}>
+          <div style={{ width:48, height:48, borderRadius:'50%', background:'var(--aurora-primary)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 0 8px rgba(99,102,241,.15), 0 0 0 16px rgba(99,102,241,.07)' }}>
+            <MapPin style={{ color:'white', width:20, height:20 }} />
+          </div>
         </div>
       </div>
 
       <main className="px-6 -mt-8 relative z-20 space-y-6">
         
         {/* Core Details Card */}
-        <div className="bg-white p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100">
-          <h1 className="text-2xl font-black text-slate-900 leading-tight mb-4">{run.title}</h1>
+        <div className="bg-[var(--surface-card)] p-6 border border-[var(--border-card)]" style={{ borderRadius: 'var(--radius-lg)' }}>
+          <h1 className="text-2xl font-black text-[var(--foreground)] leading-tight mb-4 tracking-[-0.02em]">{run.title}</h1>
           <div className="space-y-4">
-            <div className="flex items-center gap-3 text-slate-700">
+            <div className="flex items-center gap-3 text-[#71717a]">
               <Calendar className="w-5 h-5 text-indigo-500 shrink-0" />
-              <span className="font-medium">{runDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+              <span className="font-medium text-[var(--foreground)]">{runDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</span>
             </div>
-            <div className="flex items-center gap-3 text-slate-700">
+            <div className="flex items-center gap-3 text-[#71717a]">
               <Clock className="w-5 h-5 text-indigo-500 shrink-0" />
-              <span className="font-medium">{runDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              <span className="font-medium text-[var(--foreground)]">{runDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
-            <div className="flex items-center gap-3 text-slate-700">
+            <div className="flex items-center gap-3 text-[#71717a]">
               <Users className="w-5 h-5 text-indigo-500 shrink-0" />
               <div className="font-medium flex items-center gap-2">
                 {participantCount} {participantCount === 1 ? 'runner' : 'runners'} going
@@ -377,20 +391,20 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-indigo-50 p-5 rounded-3xl border border-indigo-100">
-            <p className="text-indigo-600 text-xs font-bold uppercase tracking-wider mb-1">Distance</p>
-            <p className="text-2xl font-black text-indigo-900">{parseFloat(Number(run.distance_miles).toFixed(2))} <span className="text-base font-semibold text-indigo-700">mi</span></p>
+          <div className="p-5" style={{ background: 'var(--aurora-subtle)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)' }}>
+            <p className="text-[#71717a] text-xs font-bold uppercase tracking-wider mb-1">Distance</p>
+            <p className="text-2xl font-black aurora-text">{parseFloat(Number(run.distance_miles).toFixed(2))} <span className="text-base font-semibold">mi</span></p>
           </div>
-          <div className="bg-emerald-50 p-5 rounded-3xl border border-emerald-100">
-            <p className="text-emerald-600 text-xs font-bold uppercase tracking-wider mb-1">Target Pace</p>
-            <p className="text-2xl font-black text-emerald-900">{run.pace_min_mile}</p>
+          <div className="p-5" style={{ background: 'var(--aurora-subtle)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-md)' }}>
+            <p className="text-[#71717a] text-xs font-bold uppercase tracking-wider mb-1">Target Pace</p>
+            <p className="text-2xl font-black aurora-text">{run.pace_min_mile}</p>
           </div>
         </div>
 
         {/* The Roster & Interactive UI */}
         <div className="pt-4">
           <div className="flex justify-between items-end mb-4">
-            <h3 className="font-black text-slate-900 text-lg">Runners ({participantCount})</h3>
+            <h3 className="font-black text-[var(--foreground)] text-lg">Runners ({participantCount})</h3>
             {isRunStarted && hasJoined && (
                <p className="text-xs font-bold text-orange-500 uppercase tracking-widest">{3 - fistBumpsGiven.length} bumps left</p>
             )}
@@ -405,9 +419,9 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
               const isBumped = fistBumpsGiven.includes(u.id);
               
               return (
-                <div key={p.user_id} className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                <div key={p.user_id} className="flex items-center justify-between last:border-b-0" style={{ padding: '12px 0', borderBottom: '0.5px solid var(--border-card)' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
+                    <div className="w-10 h-10 rounded-full bg-[var(--surface-subtle)] overflow-hidden shrink-0 border border-[var(--border-card)]">
                       {u.profile_image_url ? (
                         <img src={u.profile_image_url} alt={u.full_name} className="w-full h-full object-cover" />
                       ) : (
@@ -415,14 +429,17 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
                       )}
                     </div>
                     <div className="flex flex-col">
-                       <span className="font-bold text-slate-900 flex items-center gap-2">
-                         {u.full_name || "Runner"} {isMe && <span className="text-slate-400 font-medium text-xs">(You)</span>}
+                       <span className="font-bold text-[var(--foreground)] flex items-center gap-2">
+                         {u.full_name || "Runner"} {isMe && <span className="text-[#71717a] font-medium text-xs">(You)</span>}
                          {p.checked_in && <span title="Checked In"><CheckCircle2 className="w-4 h-4 text-emerald-500" /></span>}
                        </span>
                        {!isRunStarted && (
-                          <Badge variant={getTierVariant(u.tier)} className="text-[10px] mt-1">
-                            {u.tier || "Getting Started"}
-                          </Badge>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <div className="w-1 h-1 rounded-full bg-[#8b5cf6]" />
+                            <span style={{ fontSize: 10, color: '#8b5cf6', fontWeight: 500 }}>
+                              {u.tier || "Getting Started"}
+                            </span>
+                          </div>
                        )}
                     </div>
                   </div>
@@ -434,16 +451,23 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
                        disabled={isBumped || fistBumpsGiven.length >= 3}
                        className={`px-4 py-2 rounded-xl font-bold text-sm transition-all focus:outline-none flex items-center gap-2 ${
                           isBumped 
-                            ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                            ? "bg-[var(--surface-subtle)] text-[#a1a1aa] cursor-not-allowed" 
                             : fistBumpsGiven.length >= 3 
-                               ? "bg-slate-50 text-slate-300 cursor-not-allowed"
+                               ? "bg-[var(--surface-subtle)] text-[#71717a] opacity-50 cursor-not-allowed"
                                : "bg-orange-100 text-orange-600 hover:bg-orange-200 active:scale-[0.95]"
                        }`}
                      >
                        {isBumped ? "Bumped!" : "👊 Bump"}
                      </button>
                   ) : (
-                    isRunStarted && <Badge variant={getTierVariant(u.tier)} className="text-[10px] mt-1">{u.tier || "Getting Started"}</Badge>
+                    isRunStarted && (
+                      <div className="flex items-center gap-1">
+                        <div className="w-1 h-1 rounded-full bg-[#8b5cf6]" />
+                        <span style={{ fontSize: 10, color: '#8b5cf6', fontWeight: 500 }}>
+                          {u.tier || "Getting Started"}
+                        </span>
+                      </div>
+                    )
                   )}
                 </div>
               );
@@ -453,7 +477,7 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
       </main>
 
       {/* Floating Action Button */}
-      <div className="fixed bottom-0 inset-x-0 p-6 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent z-30">
+      <div className="fixed bottom-0 inset-x-0 p-6 bg-gradient-to-t from-[var(--surface-page)] via-[var(--surface-page)] to-transparent z-30">
         <div className="max-w-md mx-auto">
           {hasJoined ? (
             isCheckedIn ? (
@@ -465,7 +489,8 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
               <button
                 onClick={handleCheckIn}
                 disabled={joinLoading}
-                className="w-full bg-orange-500 text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-2xl shadow-lg hover:bg-orange-600 transition active:scale-[0.98]"
+                className="w-full text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-2xl shadow-lg transition active:scale-[0.98]"
+                style={{ background: 'var(--aurora-primary)' }}
               >
                 {joinLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <MapPin className="w-5 h-5" />}
                 Check In Now
@@ -473,7 +498,7 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
             ) : (
               <button
                 disabled
-                className="w-full bg-slate-900 text-white font-semibold flex items-center justify-center gap-2 py-4 rounded-2xl shadow-lg opacity-90 cursor-not-allowed transition transform"
+                className="w-full bg-[var(--surface-card)] border border-[var(--border-card)] text-[var(--foreground)] font-semibold flex items-center justify-center gap-2 py-4 rounded-2xl opacity-90 cursor-not-allowed transition transform"
               >
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                 You're in! 🎉
@@ -483,7 +508,8 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
             <button
               onClick={handleJoinRun}
               disabled={joinLoading}
-              className="w-full bg-indigo-600 disabled:bg-indigo-400 text-white font-semibold py-4 rounded-2xl shadow-[0_8px_30px_rgb(79,70,229,0.3)] hover:bg-indigo-500 flex items-center justify-center gap-2 transition active:scale-[0.98]"
+              className="w-full text-white font-semibold py-4 rounded-2xl flex items-center justify-center gap-2 transition active:scale-[0.98]"
+              style={{ background: 'var(--aurora-primary)' }}
             >
               {joinLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Join Run"}
             </button>

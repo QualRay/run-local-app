@@ -10,21 +10,21 @@ export default async function Index() {
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 min-h-screen relative pb-20">
+    <div className="flex flex-col h-full bg-[var(--surface-page)] min-h-screen relative pb-20">
       {/* Dynamic Header */}
-      <header className="p-6 pb-2 bg-slate-50/80 backdrop-blur-md sticky top-0 z-20 border-b border-slate-100">
+      <header className="p-6 pb-2 bg-[var(--surface-page)]/80 backdrop-blur-md sticky top-0 z-20 border-b border-[var(--border-card)]">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-black tracking-tighter text-slate-900 border-b-2 border-indigo-500 inline-block">RunLocal.</h1>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">Community Runs</p>
+            <h1 className="text-3xl font-black tracking-tighter aurora-text inline-block mb-1">RunLocal.</h1>
+            <p className="font-semibold text-[#71717a] uppercase tracking-[0.07em] text-[10px] mt-0">COMMUNITY RUNS</p>
           </div>
 
           {user ? (
-            <Link href="/profile" className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center shadow-md border-2 border-white hover:scale-105 transition-transform active:scale-95">
+            <Link href="/profile" className="w-10 h-10 rounded-full text-white font-bold flex items-center justify-center shadow-md border-2 border-[var(--surface-card)] hover:scale-105 transition-transform active:scale-95" style={{ background: 'var(--aurora-primary)' }}>
               {user.user_metadata?.full_name?.charAt(0)?.toUpperCase() || "U"}
             </Link>
           ) : (
-            <Link href="/login" className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 hover:bg-slate-800 transition active:scale-95 shadow-sm">
+            <Link href="/login" className="bg-[var(--surface-subtle)] border border-[var(--border-card)] text-[var(--primary)] px-5 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 hover:opacity-80 transition active:scale-95">
               <LogIn className="w-4 h-4" />
               Log In
             </Link>
@@ -40,7 +40,8 @@ export default async function Index() {
       <div className="fixed bottom-8 right-6 z-30">
         <Link 
           href={user ? "/create" : "/login"} 
-          className="bg-indigo-600 hover:bg-indigo-500 text-white w-14 h-14 rounded-full shadow-[0_8px_30px_rgb(79,70,229,0.4)] flex items-center justify-center transition-all active:scale-95"
+          className="text-white w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95 dark:shadow-[0_4px_24px_rgba(99,102,241,0.3)]"
+          style={{ background: 'var(--aurora-primary)' }}
           aria-label="Create new run"
         >
           <Plus className="w-7 h-7" />

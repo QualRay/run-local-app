@@ -1,6 +1,9 @@
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import "./globals.css";
 import { Toaster } from "sonner";
 import AnimationShell from "@/components/AnimationShell";
+import SmoothScroll from "@/components/SmoothScroll";
 
 export const metadata = {
   title: "RunLocal - Find Runs Near You",
@@ -13,12 +16,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="antialiased bg-background text-foreground min-h-screen">
         <main className="max-w-md mx-auto min-h-screen border-x border-gray-100 dark:border-gray-800 shadow-sm relative">
-          <AnimationShell>
-            {children}
-          </AnimationShell>
+          <SmoothScroll>
+            <AnimationShell>
+              {children}
+            </AnimationShell>
+          </SmoothScroll>
           <Toaster position="top-center" richColors />
         </main>
       </body>
