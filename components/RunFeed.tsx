@@ -239,12 +239,12 @@ export default function RunFeed() {
               }}
               className="absolute top-1/2 -translate-y-1/2 w-full h-2 rounded-full appearance-none cursor-pointer focus:outline-none
                          [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 
-                         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--surface-card)]
-                         [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(139,92,246,0.3)] [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-[#8b5cf6]
+                         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white
+                         [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(139,92,246,0.5)] [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-[#8b5cf6]
                          [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110 [&::-webkit-slider-thumb]:active:cursor-grabbing
                          [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 
-                         [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[var(--surface-card)]
-                         [&::-moz-range-thumb]:shadow-[0_0_10px_rgba(139,92,246,0.3)] [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-[#8b5cf6]
+                         [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white
+                         [&::-moz-range-thumb]:shadow-[0_0_10px_rgba(139,92,246,0.5)] [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-[#8b5cf6]
                          [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:active:scale-110"
               style={{
                 background: `linear-gradient(to right, #8b5cf6 ${(radiusMiles - 1) / 19 * 100}%, var(--surface-subtle) ${(radiusMiles - 1) / 19 * 100}%)`
