@@ -209,31 +209,49 @@ export default function RunFeed() {
     <div className="space-y-6">
       
       {/* Search Radius Controller */}
-      <div className="bg-[var(--surface-card)] rounded-[2rem] p-6 shadow-sm border border-[var(--border-card)] relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-6 opacity-5">
-           <Map className="w-32 h-32 -mt-10 -mr-10 text-indigo-900" />
+      <div className="bg-[var(--surface-card)] rounded-[2rem] p-6 shadow-sm border border-[var(--border-card)] relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-6 opacity-[0.03] dark:opacity-5 transition-opacity group-hover:opacity-[0.06] dark:group-hover:opacity-10 pointer-events-none">
+           <Map className="w-32 h-32 -mt-10 -mr-10 text-[#8b5cf6]" />
         </div>
         <div className="relative z-10">
-          <div className="flex justify-between items-center mb-5">
-            <label className="text-sm font-bold text-[var(--foreground)] uppercase tracking-widest">Search Radius</label>
-            <span className="font-bold px-3 py-1.5 rounded-xl text-sm transition-all shadow-inner" style={{ background: 'var(--aurora-subtle)', color: '#8b5cf6' }}>
-              {radiusMiles} miles
-            </span>
+          <div className="flex justify-between items-center mb-6">
+            <label className="text-sm font-bold text-[var(--foreground)] uppercase tracking-widest flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-[#8b5cf6]" />
+              Search Radius
+            </label>
+            <div className="relative group/tooltip">
+              <span className="font-bold px-4 py-1.5 rounded-xl text-sm transition-all shadow-sm aurora-text bg-[var(--surface-subtle)] border border-[var(--border-card)] flex items-center justify-center min-w-[90px]">
+                {radiusMiles} miles
+              </span>
+            </div>
           </div>
           
-          <input
-            type="range"
-            min="1"
-            max="20"
-            step="1"
-            value={radiusMiles}
-            onChange={(e) => {
-              setRadiusMiles(parseInt(e.target.value));
-              setAutoExpandedTo(null); // Clear message if user manually changes slider
-            }}
-            className="w-full h-2 bg-[var(--surface-subtle)] rounded-lg appearance-none cursor-pointer accent-[#8b5cf6] transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          />
-          <div className="flex justify-between text-xs text-[#71717a] mt-3 font-semibold px-0.5">
+          <div className="relative w-full flex items-center h-4 mt-2 mb-1">
+            <input
+              type="range"
+              min="1"
+              max="20"
+              step="1"
+              value={radiusMiles}
+              onChange={(e) => {
+                setRadiusMiles(parseInt(e.target.value));
+                setAutoExpandedTo(null); // Clear message if user manually changes slider
+              }}
+              className="absolute top-1/2 -translate-y-1/2 w-full h-2 rounded-full appearance-none cursor-pointer focus:outline-none
+                         [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 
+                         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--surface-card)]
+                         [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(139,92,246,0.3)] [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-[#8b5cf6]
+                         [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110 [&::-webkit-slider-thumb]:active:cursor-grabbing
+                         [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 
+                         [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[var(--surface-card)]
+                         [&::-moz-range-thumb]:shadow-[0_0_10px_rgba(139,92,246,0.3)] [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-[#8b5cf6]
+                         [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:active:scale-110"
+              style={{
+                background: `linear-gradient(to right, #8b5cf6 ${(radiusMiles - 1) / 19 * 100}%, var(--surface-subtle) ${(radiusMiles - 1) / 19 * 100}%)`
+              }}
+            />
+          </div>
+          <div className="flex justify-between text-[11px] uppercase tracking-wider text-[#71717a] dark:text-[#a1a1aa] mt-4 font-bold px-1">
             <span>1 mi</span>
             <span>20 mi</span>
           </div>

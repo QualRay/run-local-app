@@ -9,6 +9,16 @@ export default async function Index() {
   // Real Server-Side Auth Check
   const { data: { user } } = await supabase.auth.getUser()
 
+  let profile = null;
+  if (user) {
+    const { data } = await supabase
+      .from('users')
+      .select('profile_image_url, full_name')
+      .eq('id', user.id)
+      .single();
+    profile = data;
+  }
+
   return (
     <div className="flex flex-col h-full bg-[var(--surface-page)] min-h-screen relative pb-20">
       {/* Dynamic Header */}
@@ -20,8 +30,12 @@ export default async function Index() {
           </div>
 
           {user ? (
-            <Link href="/profile" className="w-10 h-10 rounded-full text-white font-bold flex items-center justify-center shadow-md border-2 border-[var(--surface-card)] hover:scale-105 transition-transform active:scale-95" style={{ background: 'var(--aurora-primary)' }}>
-              {user.user_metadata?.full_name?.charAt(0)?.toUpperCase() || "U"}
+            <Link href="/profile" className="w-10 h-10 rounded-full text-white font-bold flex items-center justify-center shadow-md border-2 border-[var(--surface-card)] hover:scale-105 transition-transform active:scale-95 overflow-hidden" style={{ background: 'var(--aurora-primary)' }}>
+              {profile?.profile_image_url ? (
+                <img src={profile.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                profile?.full_name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || "U"
+              )}
             </Link>
           ) : (
             <Link href="/login" className="bg-[var(--surface-subtle)] border border-[var(--border-card)] text-[var(--primary)] px-5 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 hover:opacity-80 transition active:scale-95">
