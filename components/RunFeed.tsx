@@ -8,7 +8,7 @@ import RunFeedSkeleton from "./RunFeedSkeleton";
 import { motion } from "framer-motion";
 
 const listVariants = { visible: { transition: { staggerChildren: 0.06 } } };
-const cardVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4,0,0.2,1] } } };
+const cardVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" as const } } };
 
 export type Run = {
   id: string;

@@ -1,5 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
-import { MapPin, LogIn, Plus } from 'lucide-react'
+import { MapPin, LogIn } from 'lucide-react'
 import RunFeed from '@/components/RunFeed'
 import Link from 'next/link'
 
@@ -49,18 +49,6 @@ export default async function Index() {
       <main className="px-6 pt-6 flex-1">
         <RunFeed />
       </main>
-
-      {/* Floating Action Button - Properly Routed */}
-      <div className="fixed bottom-8 right-6 z-30">
-        <Link 
-          href={user ? "/create" : "/login"} 
-          className="text-white w-14 h-14 rounded-full flex items-center justify-center transition-all active:scale-95 dark:shadow-[0_4px_24px_rgba(99,102,241,0.3)]"
-          style={{ background: 'var(--aurora-primary)' }}
-          aria-label="Create new run"
-        >
-          <Plus className="w-7 h-7" />
-        </Link>
-      </div>
     </div>
   )
 }

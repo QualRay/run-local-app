@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import AnimationShell from "@/components/AnimationShell";
 import SmoothScroll from "@/components/SmoothScroll";
+import TabBar from "@/components/TabBar";
 
 export const metadata = {
   title: "RunLocal - Find Runs Near You",
@@ -18,13 +19,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="antialiased bg-background text-foreground min-h-screen">
-        <main className="max-w-md mx-auto min-h-screen border-x border-gray-100 dark:border-gray-800 shadow-sm relative">
+        <main className="max-w-md mx-auto min-h-screen border-x border-gray-100 dark:border-gray-800 shadow-sm relative pb-24">
           <SmoothScroll>
             <AnimationShell>
               {children}
             </AnimationShell>
           </SmoothScroll>
           <Toaster position="top-center" richColors />
+          <TabBar />
         </main>
       </body>
     </html>
