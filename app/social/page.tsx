@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Loader2, Search, Users, Activity } from 'lucide-react'
+import Image from 'next/image'
 
 // timeAgo helper
 const timeAgo = (d: string) => { 
@@ -156,7 +157,14 @@ export default function SocialPage() {
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-[var(--surface-subtle)] shrink-0 flex items-center justify-center font-bold text-[#71717a] border border-[var(--border-card)]">
                       {item.actor?.profile_image_url ? (
-                        <img src={item.actor.profile_image_url} alt={actorName} className="w-full h-full object-cover" />
+                        <Image
+                          src={item.actor.profile_image_url}
+                          alt={actorName ?? 'Runner'}
+                          width={32}
+                          height={32}
+                          className="w-full h-full object-cover"
+                          sizes="32px"
+                        />
                       ) : (
                         actorName.charAt(0).toUpperCase()
                       )}
@@ -209,7 +217,14 @@ export default function SocialPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full overflow-hidden bg-[var(--surface-subtle)] shrink-0 flex items-center justify-center font-bold text-[#71717a] border border-[var(--border-card)]">
                         {runner.profile_image_url ? (
-                          <img src={runner.profile_image_url} alt={runner.full_name} className="w-full h-full object-cover" />
+                          <Image
+                            src={runner.profile_image_url}
+                            alt={runner.full_name ?? 'Runner'}
+                            width={32}
+                            height={32}
+                            className="w-full h-full object-cover"
+                            sizes="32px"
+                          />
                         ) : (
                           (runner.full_name || 'U').charAt(0).toUpperCase()
                         )}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Loader2, Calendar, MapPin } from 'lucide-react'
+import Image from 'next/image'
 
 // timeAgo helper
 const timeAgo = (d: string) => { 
@@ -155,7 +156,15 @@ export default function RunnerProfile({ params }: { params: { id: string } }) {
           <div className="relative w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-[#8b5cf6] via-[#6366f1] to-[#ec4899] mb-4">
             <div className="w-full h-full bg-[var(--surface-page)] rounded-full overflow-hidden border-[3px] border-[var(--surface-page)] flex items-center justify-center font-bold text-3xl text-[#71717a]">
               {profile.profile_image_url ? (
-                <img src={profile.profile_image_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                <Image
+                  src={profile.profile_image_url}
+                  alt={profile.full_name ?? 'Profile photo'}
+                  width={128}
+                  height={128}
+                  className="w-full h-full object-cover"
+                  priority
+                  sizes="128px"
+                />
               ) : (
                 (profile.full_name || 'U').charAt(0).toUpperCase()
               )}

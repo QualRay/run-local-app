@@ -100,7 +100,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="aurora-bg-drift min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="aurora-bg-drift min-h-screen flex flex-col items-center justify-center p-6" style={{ willChange: 'background-position' }}>
       <div 
         className="max-w-sm w-full backdrop-blur-[20px] bg-[var(--surface-card)]/80 frosted-glass border border-[var(--border-card)] shadow-2xl relative z-10"
         style={{ borderRadius: 'var(--radius-xl)', padding: '40px 32px' }}

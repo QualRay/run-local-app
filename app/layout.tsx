@@ -6,9 +6,31 @@ import AnimationShell from "@/components/AnimationShell";
 import SmoothScroll from "@/components/SmoothScroll";
 import TabBar from "@/components/TabBar";
 
-export const metadata = {
+import type { Metadata, Viewport } from 'next';
+import InstallPrompt from "@/components/InstallPrompt";
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+
+export const metadata: Metadata = {
   title: "RunLocal - Find Runs Near You",
   description: "A hyperlocal running app to find and join runs within a 5-mile radius.",
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'RunLocal',
+  },
+  formatDetection: { telephone: false },
+  icons: [
+    { rel: 'apple-touch-icon', url: '/apple-touch-icon.png' }
+  ],
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#6366f1' },
+    { media: '(prefers-color-scheme: dark)', color: '#6366f1' },
+  ],
 };
 
 export default function RootLayout({
@@ -27,6 +49,9 @@ export default function RootLayout({
           </SmoothScroll>
           <Toaster position="top-center" richColors />
           <TabBar />
+          <InstallPrompt />
+          <Analytics />
+          <SpeedInsights />
         </main>
       </body>
     </html>

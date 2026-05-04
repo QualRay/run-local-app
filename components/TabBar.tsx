@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { Home, Compass, PlusCircle, Users, User } from 'lucide-react'
 
 export default function TabBar() {
@@ -19,7 +19,7 @@ export default function TabBar() {
   ]
 
   return (
-    <div className="fixed bottom-[24px] left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-[360px] bg-[rgba(255,255,255,0.85)] dark:bg-[rgba(17,17,17,0.85)] backdrop-blur-[20px] rounded-full border-[0.5px] border-[var(--border-card)] px-4 py-2 flex justify-between items-center z-50">
+    <div suppressHydrationWarning className="fixed bottom-[24px] left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-[360px] bg-[rgba(255,255,255,0.85)] dark:bg-[rgba(17,17,17,0.85)] backdrop-blur-[20px] rounded-full border-[0.5px] border-[var(--border-card)] px-4 py-2 flex justify-between items-center z-50">
       {tabs.map((tab) => {
         const Icon = tab.icon
         const active = isActive(tab.route)

@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import PageTransition from "@/components/PageTransition";
+import Image from "next/image";
+import * as Sentry from "@sentry/nextjs";
 
 type RunData = {
   id: string;
@@ -59,7 +61,10 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
 
       // 2. Fetch User & Participation
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) setCurrentUserId(user.id);
+      if (user) {
+        setCurrentUserId(user.id);
+        Sentry.setUser({ id: user.id, email: user.email });
+      }
       
       const { data: participants, count } = await supabase
         .from("run_participants")
@@ -423,7 +428,14 @@ export default function RunDetailPage({ params }: { params: { id: string } }) {
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[var(--surface-subtle)] overflow-hidden shrink-0 border border-[var(--border-card)]">
                       {u.profile_image_url ? (
-                        <img src={u.profile_image_url} alt={u.full_name} className="w-full h-full object-cover" />
+                        <Image
+                          src={u.profile_image_url}
+                          alt={u.full_name ?? 'Runner'}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                          sizes="40px"
+                        />
                       ) : (
                         <span className="w-full h-full flex justify-center items-center text-lg">🏃</span>
                       )}

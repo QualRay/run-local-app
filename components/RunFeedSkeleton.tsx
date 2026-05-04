@@ -7,7 +7,7 @@ export default function RunFeedSkeleton() {
         <div 
           key={key}
           className="bg-[var(--surface-card)] p-5 border border-[var(--border-card)]"
-          style={{ borderRadius: 'var(--radius-lg)' }}
+          style={{ borderRadius: 'var(--radius-lg)', minHeight: 176 }}
         >
           <div className="flex justify-between items-start mb-4">
             <div className="w-full">

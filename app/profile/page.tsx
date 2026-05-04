@@ -4,6 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowLeft, Edit2, Check, Camera, Trophy, Flame } from "lucide-react";
+import Image from "next/image";
+import * as Sentry from "@sentry/nextjs";
 
 type UserProfile = {
   id: string;
@@ -37,6 +39,7 @@ export default function ProfilePage() {
         router.push("/login");
         return;
       }
+      Sentry.setUser({ id: user.id, email: user.email });
 
       const { data, error } = await supabase
         .from("users")
@@ -152,7 +155,15 @@ export default function ProfilePage() {
                   {uploadingImage ? (
                     <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
                   ) : profile.profile_image_url ? (
-                    <img src={profile.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+                    <Image
+                      src={profile.profile_image_url}
+                      alt={profile.full_name ?? 'Profile photo'}
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover"
+                      priority
+                      sizes="128px"
+                    />
                   ) : (
                     <span className="text-4xl">🏃</span>
                   )}

@@ -52,9 +52,11 @@ body {
   background-image: var(--aurora-primary);
 }
 
-@keyframes aurora-drift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes aurora-drift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
 }
 
 .aurora-bg-drift {

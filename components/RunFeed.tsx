@@ -19,6 +19,33 @@ export type Run = {
   location_label: string;
 };
 
+// Moved outside to avoid unnecessary recreation and closure capture
+const parseLocation = (hexStr: string) => {
+  if (!hexStr || !hexStr.startsWith('0101000020E6100000')) return null;
+  const xHex = hexStr.substring(18, 34);
+  const yHex = hexStr.substring(34, 50);
+  const parseLE64 = (hex: string) => {
+    const buf = new ArrayBuffer(8);
+    const view = new DataView(buf);
+    for (let i = 0; i < 8; i++) {
+      view.setUint8(i, parseInt(hex.substring(i * 2, i * 2 + 2), 16));
+    }
+    return view.getFloat64(0, true);
+  };
+  return { lon: parseLE64(xHex), lat: parseLE64(yHex) };
+};
+
+const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 3958.8; // miles
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 export default function RunFeed() {
   // Config States
   const [radiusMiles, setRadiusMiles] = useState<number>(5);
@@ -104,68 +131,47 @@ export default function RunFeed() {
         console.error("Error fetching runs:", error);
         setAllRuns([]);
       } else if (data) {
-        // Parse EWKB Location (0101000020E6100000...) and calculate Haversine distance
-        const parseLocation = (hexStr: string) => {
-          if (!hexStr || !hexStr.startsWith('0101000020E6100000')) return null;
-          const xHex = hexStr.substring(18, 34);
-          const yHex = hexStr.substring(34, 50);
-          const parseLE64 = (hex: string) => {
-            const buf = new ArrayBuffer(8);
-            const view = new DataView(buf);
-            for (let i = 0; i < 8; i++) {
-              view.setUint8(i, parseInt(hex.substring(i * 2, i * 2 + 2), 16));
+        // Parse EWKB Location and calculate Haversine distance
+        await new Promise<void>(resolve => {
+          setTimeout(() => {
+            const processedRuns = data
+              .map((run: any) => {
+                const loc = parseLocation(run.location);
+                let dist = 9999;
+                if (loc && coords) {
+                  dist = haversineDistance(coords.lat, coords.lon, loc.lat, loc.lon);
+                }
+                return {
+                  id: run.id,
+                  title: run.title,
+                  start_time: run.start_time,
+                  distance_away_miles: dist,
+                  participants_count: run.run_participants?.[0]?.count || 0,
+                  location_label: run.location_label,
+                };
+              })
+              .sort((a, b) => a.distance_away_miles - b.distance_away_miles); // Sort by closest!
+
+            // SMART RADIUS EXPANSION
+            let currentRadius = 5;
+            let runsFound = processedRuns.some(r => r.distance_away_miles <= currentRadius);
+            
+            if (!runsFound) {
+              for (const step of [10, 15, 20]) {
+                 if (processedRuns.some(r => r.distance_away_miles <= step)) {
+                    currentRadius = step;
+                    setAutoExpandedTo(step);
+                    runsFound = true;
+                    break;
+                 }
+              }
             }
-            return view.getFloat64(0, true);
-          };
-          return { lon: parseLE64(xHex), lat: parseLE64(yHex) };
-        };
-
-        const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-          const R = 3958.8; // miles
-          const dLat = (lat2 - lat1) * (Math.PI / 180);
-          const dLon = (lon2 - lon1) * (Math.PI / 180);
-          const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          return R * c;
-        };
-
-        const processedRuns = data
-          .map((run: any) => {
-            const loc = parseLocation(run.location);
-            let dist = 9999;
-            if (loc && coords) {
-              dist = haversineDistance(coords.lat, coords.lon, loc.lat, loc.lon);
-            }
-            return {
-              id: run.id,
-              title: run.title,
-              start_time: run.start_time,
-              distance_away_miles: dist,
-              participants_count: run.run_participants?.[0]?.count || 0,
-              location_label: run.location_label,
-            };
-          })
-          .sort((a, b) => a.distance_away_miles - b.distance_away_miles); // Sort by closest!
-
-        // SMART RADIUS EXPANSION
-        let currentRadius = 5;
-        let runsFound = processedRuns.some(r => r.distance_away_miles <= currentRadius);
-        
-        if (!runsFound) {
-          for (const step of [10, 15, 20]) {
-             if (processedRuns.some(r => r.distance_away_miles <= step)) {
-                currentRadius = step;
-                setAutoExpandedTo(step);
-                runsFound = true;
-                break;
-             }
-          }
-        }
-        
-        setRadiusMiles(currentRadius);
-        setAllRuns(processedRuns);
+            
+            setRadiusMiles(currentRadius);
+            setAllRuns(processedRuns);
+            resolve();
+          }, 0);
+        });
       } else {
         setAllRuns([]);
       }
